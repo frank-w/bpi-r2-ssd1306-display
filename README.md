@@ -31,15 +31,25 @@ vpn_interface = "vpn_in"
 Further modification is planned to modulize the text and images.
 
 ## Installation
-Install required system packages:
+Install required system packages (root):
 ```
 apt install -y python3-pip python3-pil
+#if i2c is not available
+modprobe i2c-dev
+#maybe install i2c-tools and get address
+i2cdetect -y -r 2
+#it should display your address (mine is 3c)
+#register display on i2c-bus
+echo "ssd1306 0x3C" > /sys/class/i2c-adapter/i2c-2/new_device
+#add user to group i2c
+adduser username i2c
 ```
 
-Install required Python packages via PIP:
+Install required Python packages via PIP (user):
 ```
 python3 -m pip install --upgrade pip wheel setuptools
-python3 -m pip install Adafruit-SSD1306 Adafruit-BBIO Adafruit-GPIO Adafruit-PureIO psutil
+python3 -m pip install Adafruit-SSD1306 Adafruit-BBIO psutil
+#Adafruit-GPIO Adafruit-PureIO
 ```
 
 Clone the repo, install  and enable the service file:
