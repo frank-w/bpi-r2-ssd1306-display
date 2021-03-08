@@ -46,7 +46,7 @@ if use_img:
     from PIL import ImageDraw
     from PIL import ImageFont
 
-iconpath = os.path.dirname(__file__)
+iconpath = os.path.dirname(os.path.abspath(__file__))
 iconwidth = 16
 
 ###################################################################################
