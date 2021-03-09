@@ -111,6 +111,49 @@ def get_ip_address(ifname):
         struct.pack('256s', ifname[:15].encode('UTF-8'))
     )[20:24])
 
+def disk_usage(mp='/'):
+    mem = psutil.disk_usage(mp)
+    total = int(mem.total / 1024 / 1024)
+    used = total - int(mem.free / 1024 / 1024)
+    percent = int(used / total * 100)
+    if used < 10000:
+        s1 = "{:4d}M".format(used)
+    else:
+        s1 = "{:2.1f}G".format(used / 1024)
+    if total < 10000:
+        s2 = "{:4d}M".format(total)
+    else:
+        s2 = "{:2.1f}G".format(total / 1024)
+
+    txt="Disk: " + s1 + "/" + s2 + " " + "{:2d}".format(percent) + "%"
+    return txt
+
+def convertSeconds(sec):
+    days = sec // 86400
+    sec -= 86400*days
+
+    hrs = sec // 3600
+    sec -= 3600*hrs
+
+    mins = sec // 60
+    sec -= 60*mins
+    return [days, hrs, mins, sec]
+
+def uptime():
+    ut = int(time.time() - psutil.boot_time()) #seconds
+    utd=convertSeconds(ut)
+    #return "%dd%dh%dm%ds" % tuple(utd)
+    return '{}d{}h{}m{}s'.format(*utd)
+
+def isInterfaceUp(ifname):
+    try:
+        with open("/sys/class/net/" + ifname + "/operstate") as f:
+            if f.read().strip() != "up":
+                throw
+        return True
+    except:
+        return False
+
 ###################################################################################
 # Our signal handler to clear the screen upon exiting the script:
 ###################################################################################
@@ -131,14 +174,13 @@ while True:
     ###############################################################################
     wan_txt="WAN: "
     wan_ico=None
-    try:
-        with open("/sys/class/net/" + wan_interface + "/operstate") as f:
-            if f.read().strip() != "up":
-                throw
+
+    if isInterfaceUp(wan_interface):
         wan_ico=globe
         wan_txt+= get_ip_address(wan_interface)
-    except:
+    else:
         wan_txt+="disconnected"
+
     print(wan_txt)
 
 
@@ -147,15 +189,14 @@ while True:
     ###############################################################################
     wifi24_txt="2G4: "
     wifi24_ico=None
-    try:
-        with open("/sys/class/net/" + w24_interface + "/operstate") as f:
-            if f.read().strip() != "up":
-                throw
+
+    if isInterfaceUp(w24_interface):
         wifi24_ico=wifi
         wifi24_txt+="up"
-    except:
+    else:
         wifi24_ico=no_wifi
         wifi24_txt+="none"
+
     print(wifi24_txt)
 
     ###############################################################################
@@ -163,29 +204,23 @@ while True:
     ###############################################################################
     wifi5_txt="5G: "
     wifi5_ico=None
-    try:
-        with open("/sys/class/net/" + w5G_interface + "/operstate") as f:
-            if f.read().strip() != "up":
-                throw
+
+    if isInterfaceUp(w5G_interface):
         wifi5_ico=wifi
         wifi5_txt+="up"
-    except:
+    else:
         wifi5_ico=no_wifi
         wifi5_txt+="none"
+
     print(wifi5_txt)
 
     ###############################################################################
     # Show the VPN symbol if the VPN_IN interface is up.
     ###############################################################################
     vpn_ico=None
-    try:
-        with open("/sys/class/net/" + vpn_interface + "/operstate") as f:
-            if f.read().strip() != "up":
-                throw
+
+    if isInterfaceUp(vpn_interface):
         vpn_ico=vpn
-    except:
-        #vpn_ico=vpn
-        pass
 
     phone_ico=None
     #phone_ico=phone
@@ -217,21 +252,10 @@ while True:
     ###############################################################################
     # Write the available and total disk space
     ###############################################################################
-    mem = psutil.disk_usage('/')
-    total = int(mem.total / 1024 / 1024)
-    used = total - int(mem.free / 1024 / 1024)
-    percent = int(used / total * 100)
-    if used < 10000:
-        s1 = "{:4d}M".format(used)
-    else:
-        s1 = "{:2.1f}G".format(used / 1024)
-    if total < 10000:
-        s2 = "{:4d}M".format(total)
-    else:
-        s2 = "{:2.1f}G".format(total / 1024)
-    disk_txt="Disk: " + s1 + "/" + s2 + " " + "{:2d}".format(percent) + "%"
+    disk_txt = disk_usage()
     print(disk_txt)
 
+    print(uptime())
     ###############################################################################
     # Generate image.
     ###############################################################################
