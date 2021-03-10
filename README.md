@@ -33,7 +33,8 @@ Further modification is planned to modulize the text and images.
 ## Installation
 Install required system packages (root):
 ```
-apt install -y python3-pip python3-pil
+#python3-pip will recommend many build-tools (cpp,gcc,g++,make,...)
+apt install --no-install-recommends i2c-tools python3-pip python3-pil
 #if i2c is not available
 modprobe i2c-dev
 #maybe install i2c-tools and get address
@@ -41,15 +42,24 @@ i2cdetect -y -r 2
 #it should display your address (mine is 3c)
 #register display on i2c-bus
 echo "ssd1306 0x3C" > /sys/class/i2c-adapter/i2c-2/new_device
-#add user to group i2c
+#check rights and add user to group i2c (created by i2c-tools)
+ls -l /dev/i2c-*
 adduser username i2c
 ```
 
 Install required Python packages via PIP (user):
 ```
 python3 -m pip install --upgrade pip wheel setuptools
+#this will fail if you have not the build.tools installed
 python3 -m pip install Adafruit-SSD1306 Adafruit-BBIO psutil
-#Adafruit-GPIO Adafruit-PureIO
+#Adafruit-GPIO Adafruit-PureIO will be installed additionally
+```
+there are no binary-packages available, but i have precompiled
+them (whl) and packed into ssd1306_python3.tar.gz
+simply unpack and install it via
+
+```
+python3 -m pip install --no-index --find-links=~/whl psutil Adafruit-SSD1306 Adafruit-BBIO
 ```
 
 Clone the repo, install  and enable the service file:
