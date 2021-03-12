@@ -26,7 +26,7 @@ use_img=False
 use_img=True
 
 use_disp=False
-#use_disp=True
+use_disp=True
 
 import os
 import time
@@ -52,10 +52,11 @@ iconwidth = 16
 ###################################################################################
 # Change these variables to reflect which network adapter to use during this check
 ###################################################################################
-wan_interface = "enp3s0"
-w24_interface = "wlo1"
-w5G_interface = "wlo1"
-vpn_interface = "vpn_in"
+wan_interface = "ppp8"
+w24_interface = "ap0"
+w5G_interface = "wlan1"
+vpn_interface = "tun0"
+voip_checkscript='/usr/local/bin/check_voip.sh'
 
 i2cbus=2
 disp_w=128
@@ -148,12 +149,17 @@ def uptime():
 def isInterfaceUp(ifname):
     try:
         with open("/sys/class/net/" + ifname + "/operstate") as f:
-            if f.read().strip() != "up":
+            if f.read().strip() == "down":
                 throw
         return True
     except:
         return False
 
+import subprocess
+def checkvoip():
+    completedProc = subprocess.run(voip_checkscript)
+    #print(completedProc.stdout,completedProc.stderr)
+    return (completedProc.returncode == 0)
 ###################################################################################
 # Our signal handler to clear the screen upon exiting the script:
 ###################################################################################
@@ -222,8 +228,10 @@ while True:
     if isInterfaceUp(vpn_interface):
         vpn_ico=vpn
 
-    phone_ico=None
-    #phone_ico=phone
+    if voip_checkscript and checkvoip():
+        phone_ico=phone
+    else:
+        phone_ico=None
     ###############################################################################
     # Write the CPU load values
     ###############################################################################
@@ -254,8 +262,8 @@ while True:
     ###############################################################################
     disk_txt = disk_usage()
     print(disk_txt)
-
-    print(uptime())
+    ut=uptime()
+    print(ut)
     ###############################################################################
     # Generate image.
     ###############################################################################
@@ -272,6 +280,8 @@ while True:
         draw.text((iconwidth * 2 + 6, 16), "5G",  font=font, fill=255)
         if phone_ico:
             image.paste(phone_ico, ((iconwidth + 2) * 3, 0))
+
+        draw.text((iconwidth * 3 + 6, 16), ut,  font=font, fill=255)
 
         if iconwidth < 24: #128/5=~25;-2=23
             if vpn_ico:
