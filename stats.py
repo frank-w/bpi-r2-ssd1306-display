@@ -57,6 +57,8 @@ w24_interface = "ap0"
 w5G_interface = "wlan1"
 vpn_interface = "tun0"
 voip_checkscript='/usr/local/bin/check_voip.sh'
+conf2g='/etc/hostapd/hostapd_ap0.conf'
+conf5g='/etc/hostapd/hostapd_wlan1.conf'
 
 i2cbus=2
 disp_w=128
@@ -160,6 +162,16 @@ def checkvoip():
     completedProc = subprocess.run(voip_checkscript)
     #print(completedProc.stdout,completedProc.stderr)
     return (completedProc.returncode == 0)
+
+def getProcInfo(appname):
+    res={}
+    for p in psutil.process_iter():
+#        print(p.pid,p.name(),p.cmdline())
+        if p.name().startswith(appname):
+            res[p.pid]=p.cmdline()
+#            print("found: ",p.pid,p.name(),p.cmdline())
+    return res
+
 ###################################################################################
 # Our signal handler to clear the screen upon exiting the script:
 ###################################################################################
@@ -189,14 +201,26 @@ while True:
 
     print(wan_txt)
 
+    #check for hostapd-processes
+    procinfo=getProcInfo("hostapd")
+    h2run=False
+    h5run=False
+
+    for pid in procinfo:
+        if "conf2g" in locals() and conf2g in procinfo[pid]:
+#            print(conf2g,"in",pid)
+            h2run=True
+        if "conf5g" in locals() and conf5g in procinfo[pid]:
+#            print(conf5g,"in",pid)
+            h5run=True
 
     ###############################################################################
-    # Show the globe symbol if the 2.4Ghz wifi interface is up.
+    # Show the first symbol if the 2.4Ghz wifi interface is up.
     ###############################################################################
     wifi24_txt="2G4: "
     wifi24_ico=None
 
-    if isInterfaceUp(w24_interface):
+    if isInterfaceUp(w24_interface) and h2run:
         wifi24_ico=wifi
         wifi24_txt+="up"
     else:
@@ -206,12 +230,12 @@ while True:
     print(wifi24_txt)
 
     ###############################################################################
-    # Show the globe symbol if the 5Ghz wifi interface is up.
+    # Show the second wifi symbol if the 5Ghz wifi interface is up.
     ###############################################################################
     wifi5_txt="5G: "
     wifi5_ico=None
 
-    if isInterfaceUp(w5G_interface):
+    if isInterfaceUp(w5G_interface) and h5run:
         wifi5_ico=wifi
         wifi5_txt+="up"
     else:
@@ -228,7 +252,7 @@ while True:
     if isInterfaceUp(vpn_interface):
         vpn_ico=vpn
 
-    if voip_checkscript and checkvoip():
+    if "voip_checkscript" in locals() and voip_checkscript and checkvoip():
         phone_ico=phone
     else:
         phone_ico=None
@@ -302,4 +326,4 @@ while True:
             disp.display()
         else:
             image.save('/home/frank/stats.png')
-    time.sleep(5)
+    time.sleep(15)
