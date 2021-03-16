@@ -157,6 +157,15 @@ def isInterfaceUp(ifname):
     except:
         return False
 
+def getTemp():
+    try:
+        with open("/sys/class/thermal/thermal_zone0/temp") as f:
+            mdc = f.read().strip()
+        return int(mdc) // 1000
+    except:
+        return "(?)"
+
+
 import subprocess
 def checkvoip():
     completedProc = subprocess.run(voip_checkscript)
@@ -187,6 +196,8 @@ signal.signal(signal.SIGINT, signal_handler)
 # Main loop which shows information about our computer:
 ###################################################################################
 while True:
+    temp_txt = str(getTemp())+"°"
+    print(temp_txt)
     ###############################################################################
     # Show the globe symbol if the WAN interface up and cable connected.
     ###############################################################################
@@ -305,6 +316,7 @@ while True:
         if phone_ico:
             image.paste(phone_ico, ((iconwidth + 2) * 3, 0))
 
+        draw.text((0,16), temp_txt,  font=font, fill=255)
         draw.text((iconwidth * 3 + 6, 16), ut,  font=font, fill=255)
 
         if iconwidth < 24: #128/5=~25;-2=23
