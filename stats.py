@@ -175,10 +175,13 @@ def checkvoip():
 def getProcInfo(appname):
     res={}
     for p in psutil.process_iter():
-#        print(p.pid,p.name(),p.cmdline())
-        if p.name().startswith(appname):
-            res[p.pid]=p.cmdline()
-#            print("found: ",p.pid,p.name(),p.cmdline())
+        try:
+            #print(p.pid,p.name(),p.cmdline())
+            if p.name().startswith(appname):
+                res[p.pid]=p.cmdline()
+                #print("found: ",p.pid,p.name(),p.cmdline())
+        except psutil.NoSuchProcess:
+            pass
     return res
 
 ###################################################################################
