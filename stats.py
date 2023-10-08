@@ -39,7 +39,9 @@ import sys
 #import Adafruit_GPIO.SPI as SPI
 
 if use_disp:
-    import Adafruit_SSD1306
+    from luma.core.interface.serial import i2c
+    from luma.core.render import canvas
+    from luma.oled.device import ssd1306
 
 if use_img:
     from PIL import Image
@@ -56,7 +58,7 @@ wan_interface = "ppp8"
 w24_interface = "ap0"
 w5G_interface = "wlan1"
 vpn_interface = "tun0"
-voip_checkscript='/usr/local/bin/check_voip.sh'
+#voip_checkscript='/usr/local/bin/check_voip.sh'
 conf2g='/etc/hostapd/hostapd_ap0.conf'
 conf5g='/etc/hostapd/hostapd_wlan1.conf'
 
@@ -66,20 +68,16 @@ disp_h=64
 
 if use_disp:
     # Initialize library.
-    disp = Adafruit_SSD1306.SSD1306_128_64(rst=None, i2c_bus=i2cbus)
-    disp.begin()
-
-    # Clear display.
-    disp.clear()
-    disp.display()
+    serial = i2c(port=2, address=0x3C)
+    device = ssd1306(serial)
 
 if use_img:
-    if use_disp:
-        width = disp.width
-        height = disp.height
-    else:
-        width=disp_w
-        height=disp_h
+    #if use_disp:
+    #    width = disp.width
+    #    height = disp.height
+    #else:
+    width=disp_w
+    height=disp_h
 
     # Create blank image for drawing.
     # Make sure to create image with mode '1' for 1-bit color.
@@ -167,10 +165,10 @@ def getTemp():
 
 
 import subprocess
-def checkvoip():
-    completedProc = subprocess.run(voip_checkscript)
-    #print(completedProc.stdout,completedProc.stderr)
-    return (completedProc.returncode == 0)
+#def checkvoip():
+#    completedProc = subprocess.run(voip_checkscript)
+#    #print(completedProc.stdout,completedProc.stderr)
+#    return (completedProc.returncode == 0)
 
 def getProcInfo(appname):
     res={}
@@ -266,10 +264,10 @@ while True:
     if isInterfaceUp(vpn_interface):
         vpn_ico=vpn
 
-    if "voip_checkscript" in locals() and voip_checkscript and checkvoip():
-        phone_ico=phone
-    else:
-        phone_ico=None
+    #if "voip_checkscript" in locals() and voip_checkscript and checkvoip():
+    #    phone_ico=phone
+    #else:
+    phone_ico=None
     ###############################################################################
     # Write the CPU load values
     ###############################################################################
@@ -337,8 +335,10 @@ while True:
             ###############################################################################
             # Display image.
             ###############################################################################
-            disp.image(image)
-            disp.display()
+            #disp.image(image)
+            #disp.display()
+            #with canvas(device) as draw:
+            device.display(image)
         else:
             image.save('/home/frank/stats.png')
     time.sleep(15)
