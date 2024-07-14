@@ -55,11 +55,13 @@ iconwidth = 16
 # Change these variables to reflect which network adapter to use during this check
 ###################################################################################
 wan_interface = "ppp8"
-w24_interface = "ap0"
+#w24_interface = "ap0"
+w24_interface = "wlan0"
 w5G_interface = "wlan1"
 vpn_interface = "tun0"
 #voip_checkscript='/usr/local/bin/check_voip.sh'
-conf2g='/etc/hostapd/hostapd_ap0.conf'
+#conf2g='/etc/hostapd/hostapd_ap0.conf'
+conf2g='/etc/hostapd/hostapd_wlan0.conf'
 conf5g='/etc/hostapd/hostapd_wlan1.conf'
 
 i2cbus=2
