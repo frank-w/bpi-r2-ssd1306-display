@@ -182,6 +182,21 @@ def getProcInfo(appname):
             pass
     return res
 
+def check_server(address, port, timeout=5):
+    # Create a TCP socket
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.settimeout(timeout)
+    #print ("Attempting to connect to %s on port %s" % (address, port))
+    try:
+        s.connect((address, port))
+        #print ("Connected to %s on port %s" % (address, port))
+        return True
+    except socket.error as error:
+        #print ("Connection to %s on port %s failed: %s" % (address, port, error))
+        return False
+    finally:
+        s.close()
+
 ###################################################################################
 # Our signal handler to clear the screen upon exiting the script:
 ###################################################################################
@@ -205,8 +220,10 @@ while True:
     wan_txt="WAN: "
     wan_ico=None
 
-    if isInterfaceUp(wan_interface):
+    if check_server("www.google.de",443):
         wan_ico=globe
+
+    if isInterfaceUp(wan_interface):
         wan_txt+= get_ip_address(wan_interface)
     else:
         wan_txt+="disconnected"
