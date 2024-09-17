@@ -59,7 +59,7 @@ wan_interface = "ppp8"
 w24_interface = "wlan0"
 w5G_interface = "wlan1"
 vpn_interface = "tun0"
-#voip_checkscript='/usr/local/bin/check_voip.sh'
+voip_checkscript='/usr/local/bin/check_voip.sh'
 #conf2g='/etc/hostapd/hostapd_ap0.conf'
 conf2g='/etc/hostapd/hostapd_wlan0.conf'
 conf5g='/etc/hostapd/hostapd_wlan1.conf'
@@ -166,11 +166,13 @@ def getTemp():
         return "(?)"
 
 
-import subprocess
-#def checkvoip():
-#    completedProc = subprocess.run(voip_checkscript)
-#    #print(completedProc.stdout,completedProc.stderr)
-#    return (completedProc.returncode == 0)
+
+from subprocess import run
+
+def checkvoip():
+    completedProc = run(voip_checkscript)
+    #print(completedProc.stdout,completedProc.stderr)
+    return (completedProc.returncode == 0)
 
 def getProcInfo(appname):
     res={}
@@ -283,10 +285,10 @@ while True:
     if isInterfaceUp(vpn_interface):
         vpn_ico=vpn
 
-    #if "voip_checkscript" in locals() and voip_checkscript and checkvoip():
-    #    phone_ico=phone
-    #else:
-    phone_ico=None
+    if "voip_checkscript" in locals() and voip_checkscript and checkvoip():
+        phone_ico=phone
+    else:
+        phone_ico=None
     ###############################################################################
     # Write the CPU load values
     ###############################################################################
