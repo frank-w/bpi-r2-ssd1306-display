@@ -102,6 +102,7 @@ if use_img:
     phone = Image.open(iconpath+"/"+'phone16w.png').convert('1')
     no_wifi = Image.open(iconpath+"/"+'no16w.png').convert('1')
     vpn   = Image.open(iconpath+"/"+'vpn16w.png').convert('1')
+    ipv6   = Image.open(iconpath+"/"+'earth16w.png').convert('1')
 
 ###################################################################################
 # Function to get IP address about a specific network adapter:
@@ -173,6 +174,10 @@ def checkvoip():
     completedProc = run(voip_checkscript)
     #print(completedProc.stdout,completedProc.stderr)
     return (completedProc.returncode == 0)
+
+def checkipv6():
+    p=run(["ping","-6","-c1","www.google.de"])
+    return (p.returncode == 0)
 
 def getProcInfo(appname):
     res={}
@@ -289,6 +294,12 @@ while True:
         phone_ico=phone
     else:
         phone_ico=None
+
+    if checkipv6():
+        ipv6_ico=ipv6
+    else:
+        ipv6_ico=None
+
     ###############################################################################
     # Write the CPU load values
     ###############################################################################
@@ -347,6 +358,9 @@ while True:
         if iconwidth < 20: #128/6=~21;-2=19
             if vpn_ico:
                 image.paste(vpn_ico, ((iconwidth + 2) * 4, 0))
+
+        if ipv6_ico:
+            image.paste(ipv6_ico, ((iconwidth + 2) * 5, 0))
 
         draw.text((0, 30), wan_txt,  font=font, fill=255)
         draw.text((0, 38), load_txt,  font=font, fill=255)
